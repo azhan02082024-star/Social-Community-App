@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pakistani Community - Badshah</title>
+<style>
+body{margin:0;font-family:Arial;background:#0a0a0a;color:white}
+.header{background:#000;padding:12px;text-align:center;color:#f7c948;font-weight:bold;border-bottom:2px solid #f7c948}
+.card{background:#1c1c1c;margin:10px;padding:15px;border-radius:12px;border:1px solid #333}
+.btn{width:100%;padding:12px;border:none;border-radius:8px;font-weight:bold;margin-top:8px}
+.gold{background:#f7c948;color:#000}.dark{background:#222;color:white}
+input{width:92%;padding:10px;margin:5px 0;background:#000;border:1px solid #444;color:white;border-radius:8px}
+.levelBox{padding:10px;border-radius:8px;margin:5px 0;background:#111;display:flex;justify-content:space-between}
+.active{border:2px solid #f7c948}
+</style>
+</head>
+<body>
+<div class="header">PAKISTANI COMMUNITY - BADSHAH SYSTEM</div>
+<div id="auth">
+<div class="card">
+<h3>Register</h3>
+<input id="name" placeholder="Name">
+<input id="email" placeholder="Email">
+<input id="pass" type="password" placeholder="Password">
+<button class="btn gold" onclick="reg()">REGISTER & START</button>
+</div>
+</div>
+<div id="app" style="display:none">
+<div class="card">
+<div>Balance: <b id="bal">0</b> | Streak: <b id="streak">0</b> | <b id="lvlBadge">Basic</b></div>
+<button class="btn dark" onclick="checkIn()">Daily Check-In +50</button>
+</div>
+<div class="card"><h3>LEVEL CHART</h3><div id="levels"></div></div>
+<div class="card">
+<h3>My Ads <span id="myAdsCount">(0)</span></h3>
+<input id="adLink" placeholder="Apna Link">
+<button class="btn gold" onclick="addAd()">ADD AD - 100</button>
+  </div><div class="card" id="bazarCard" style="display:none">
+<h3>🔥 Lalach Bazar - L4+</h3>
+<button class="btn gold" onclick="buyItem('Sword',500)">Sword - 500</button>
+</div>
+<div class="card" id="giftCard" style="display:none">
+<h3>🎁 Gift - Double Rule</h3>
+<div>Need: <b id="giftNeed">10000</b> | Bal: <b id="giftBal">0</b></div>
+<input id="giftAmt" type="number" placeholder="0-1000">
+<button class="btn gold" onclick="sendGift()">SEND GIFT</button>
+</div>
+<div class="card" style="border:2px solid red">
+<h3 style="color:red">👑 OWNER</h3>
+<input id="ownerPass" type="password" placeholder="badshah123">
+<button class="btn" style="background:red;color:white" onclick="openOwner()">OWNER LOGIN</button>
+<div id="ownerBox" style="display:none;margin-top:10px;background:#000;padding:10px;border-radius:8px">
+<div id="userList"></div>
+<button class="btn dark" onclick="giveCoins()">+1000 Coins</button>
+<button class="btn dark" onclick="logout()">Reset</button>
+</div>
+</div>
+<div class="card">
+<button class="btn dark" onclick="watchAd()">Watch Ad +5</button>
+<button class="btn dark" onclick="addInvite()">+1 Invite</button>
+</div>
+  </div><script>
+let user=JSON.parse(localStorage.getItem('badshah_user'))||null;
+let ads=JSON.parse(localStorage.getItem('badshah_ads'))||[];
+let levelsDef=[
+{n:'Basic',c:0,ads:0,streak:0,inv:0,need:0},
+{n:'L1 Mehman',c:500,ads:1,streak:3,inv:0,need:500},
+{n:'L2 Naya Sitara',c:1500,ads:2,streak:0,inv:1,need:1500},
+{n:'L3 Chamakte',c:3000,ads:3,streak:7,inv:2,need:3000},
+{n:'L4 Super Star',c:5000,ads:5,streak:10,inv:3,need:10000},
+{n:'L5 Badshah',c:10000,ads:10,streak:15,inv:5,need:20000}
+];
+function reg(){let n=name.value.trim(),e=email.value.trim(),p=pass.value.trim();if(!n||!e||!p)return alert('Fill all');user={name:n,email:e,balance:0,streak:0,invites:0,lastCheck:''};save();showApp();}
+function save(){localStorage.setItem('badshah_user',JSON.stringify(user));localStorage.setItem('badshah_ads',JSON.stringify(ads));}
+function showApp(){if(!user)return;auth.style.display='none';app.style.display='block';render();}
+function render(){bal.innerText=user.balance;giftBal.innerText=user.balance;streak.innerText=user.streak;myAdsCount.innerText='('+ads.filter(a=>a.owner==user.email).length+')';let lvl=getLevel();lvlBadge.innerText=levelsDef[lvl].n;giftNeed.innerText=levelsDef[lvl].need||10000;let h='';levelsDef.forEach((l,i)=>{h+=`<div class="levelBox ${i==lvl?'active':''}"><div><b>${l.n}</b><br><small>${l.c} Coins ${l.streak} Days ${l.inv} Inv</small></div><div>${i==lvl?'✅':''}</div></div>`});levels.innerHTML=h;bazarCard.style.display=lvl>=4?'block':'none';giftCard.style.display=lvl>=4?'block':'none';}
+function getLevel(){for(let i=levelsDef.length-1;i>=0;i--){let l=levelsDef[i];if(user.balance>=l.c&&user.streak>=l.streak&&user.invites>=l.inv)return i;}return 0;}
+function checkIn(){let t=new Date().toDateString();if(user.lastCheck==t)return alert('Ho chuka');user.lastCheck=t;user.streak++;user.balance+=50;save();render();}
+function watchAd(){user.balance+=5;save();render();}
+function addAd(){let lvl=getLevel(),max=levelsDef[lvl].ads;if(ads.filter(a=>a.owner==user.email).length>=max)return alert('Limit '+max);if(user.balance<100)return alert('100 need');if(!adLink.value)return alert('Link dalo');user.balance-=100;ads.push({owner:user.email,link:adLink.value});save();render();}
+function sendGift(){if(getLevel()<4)return alert('L4 only');let need=levelsDef[getLevel()].need;if(user.balance<need)return alert('Need '+need);let amt=parseInt(giftAmt.value)||0;user.balance-=amt;save();render();alert('Sent');}
+function buyItem(n,c){if(user.balance<c)return alert('Low');user.balance-=c;save();render();alert(n);}
+function addInvite(){user.invites++;save();render();}
+function openOwner(){if(ownerPass.value!='badshah123')return alert('Wrong');ownerBox.style.display='block';userList.innerHTML=`User:${user.email}<br>Bal:${user.balance}<br>Inv:${user.invites}<br>Lvl:${levelsDef[getLevel()].n}`;}
+function giveCoins(){user.balance+=1000;save();render();}
+function logout(){localStorage.clear();location.reload();}
+if(user)showApp();
+</script>
+</body>
+</html>
