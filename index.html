@@ -70,7 +70,17 @@ let levelsDef=[
 {n:'L4 Super Star',c:5000,ads:5,streak:10,inv:3,need:10000},
 {n:'L5 Badshah',c:10000,ads:10,streak:15,inv:5,need:20000}
 ];
-function reg(){let n=name.value.trim(),e=email.value.trim(),p=pass.value.trim();if(!n||!e||!p)return alert('Fill all');user={name:n,email:e,balance:0,streak:0,invites:0,lastCheck:''};save();showApp();}
+function reg()function reg(){
+ let n=document.getElementById('name').value.trim();
+ let e=document.getElementById('email').value.trim();
+ let p=document.getElementById('pass').value.trim();
+ if(!n||!e||!p){alert('Name Email Password bharo'); return;}
+ localStorage.setItem('badshah_user',JSON.stringify(user));
+ localStorage.setItem('badshah_ads',JSON.stringify(ads));
+ document.getElementById('auth').style.display='none';
+ document.getElementById('app').style.display='block';
+ render();
+    }{let n=name.value.trim(),e=email.value.trim(),p=pass.value.trim();if(!n||!e||!p)return alert('Fill all');user={name:n,email:e,balance:0,streak:0,
 function save(){localStorage.setItem('badshah_user',JSON.stringify(user));localStorage.setItem('badshah_ads',JSON.stringify(ads));}
 function showApp(){if(!user)return;auth.style.display='none';app.style.display='block';render();}
 function render(){bal.innerText=user.balance;giftBal.innerText=user.balance;streak.innerText=user.streak;myAdsCount.innerText='('+ads.filter(a=>a.owner==user.email).length+')';let lvl=getLevel();lvlBadge.innerText=levelsDef[lvl].n;giftNeed.innerText=levelsDef[lvl].need||10000;let h='';levelsDef.forEach((l,i)=>{h+=`<div class="levelBox ${i==lvl?'active':''}"><div><b>${l.n}</b><br><small>${l.c} Coins ${l.streak} Days ${l.inv} Inv</small></div><div>${i==lvl?'✅':''}</div></div>`});levels.innerHTML=h;bazarCard.style.display=lvl>=4?'block':'none';giftCard.style.display=lvl>=4?'block':'none';}
